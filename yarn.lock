@@ -5545,6 +5545,11 @@ react-native-logs@^2.2.1:
   resolved "https://registry.yarnpkg.com/react-native-logs/-/react-native-logs-2.2.1.tgz#ede856bae603957d6796e805e130a288e11b749d"
   integrity sha512-yWS2sPy3ZksYBt9C6Ga7YkBWOFT3E/onLluyci42iv29MWcQim0i59vUmZgIFgg2NwC04IQi04xfK5GiSZvyrQ==
 
+react-native-permissions@^2.2.2:
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/react-native-permissions/-/react-native-permissions-2.2.2.tgz#3d2a63f6b7d6be52fc86e30f77412a9566283028"
+  integrity sha512-ihf4shQDSX5Oo9ChQXb9kr13mmyyNem5MaEvOpr3dCjhBOBWyEMztXm9/uPK1Qg5PsNpaYLa1KpcPZDCw87LXg==
+
 react-native@0.63.3:
   version "0.63.3"
   resolved "https://registry.yarnpkg.com/react-native/-/react-native-0.63.3.tgz#4a7f6540e049ff41810887bbd1125abc4672f3bf"

@@ -4,6 +4,7 @@ require_relative '../node_modules/@react-native-community/cli-platform-ios/nativ
 platform :ios, '10.0'
 
 target 'Bluedot' do
+  permissions_path = '../node_modules/react-native-permissions/ios'
   config = use_native_modules!
 
   use_react_native!(:path => config["reactNativePath"])
@@ -11,6 +12,9 @@ target 'Bluedot' do
   pod 'react-native-plugin', :path => '../node_modules/bluedot-react-native'
 
   pod 'RNFS', :path => '../node_modules/react-native-fs'
+
+  pod 'Permission-LocationAlways', :path => "#{permissions_path}/LocationAlways.podspec"
+  pod 'Permission-LocationWhenInUse', :path => "#{permissions_path}/LocationWhenInUse.podspec"
 
   target 'BluedotTests' do
     inherit! :complete

@@ -19,6 +19,7 @@ import {
   Alert,
   PermissionsAndroid,
   FlatList,
+  Platform,
 } from 'react-native';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
@@ -27,13 +28,18 @@ import {logger} from 'react-native-logs';
 import {rnFsFileAsync} from 'react-native-logs/dist/transports/rnFsFileAsync';
 var RNFS = require('react-native-fs');
 
+import {requestMultiple, PERMISSIONS} from 'react-native-permissions';
+
 const config = {
   transport: rnFsFileAsync,
   transportOptions: {
     hideDate: true,
     dateFormat: 'iso',
     hideLevel: true,
-    loggerPath: RNFS.ExternalDirectoryPath,
+    loggerPath:
+      Platform.OS === 'android'
+        ? RNFS.ExternalDirectoryPath
+        : RNFS.DocumentDirectoryPath,
     loggerName: 'myLogsFile',
   },
 };
@@ -83,7 +89,6 @@ const App = () => {
     log.info(data);
   };
   const startBluedotSDK = () => {
-    // Foreground Service for Android to improve trigger rate - iOS will ignore this.
     BluedotPointSdk.setForegroundNotification(
       channelId,
       channelName,
@@ -91,9 +96,6 @@ const App = () => {
       content,
       true,
     );
-
-    // If you would like to add custom event meta data
-    //BluedotPointSdk.setCustomEventMetaData({userId: 'user_id_goes_here'});
 
     // Start Bluedot SDK
     BluedotPointSdk.authenticate(
@@ -108,7 +110,10 @@ const App = () => {
         setData((prevData) => [
           ...prevData,
           ...[
-            {heading: 'Authenticaion Success', data: 'Connection Successful'},
+            {
+              heading: 'Authenticaion Success',
+              data: 'Connection Successful',
+            },
           ],
         ]);
       },
@@ -129,125 +134,69 @@ const App = () => {
         ]);
       },
     );
+
+    BluedotPointSdk.on('zoneInfoUpdate', (event) => {
+      // ...
+      console.warn('Zone info');
+      printLogs({heading: 'Zone Info', data: event});
+      showAlert('zone', event);
+      setData((prevData) => [
+        ...prevData,
+        ...[{heading: 'Zone Info', data: JSON.stringify(event)}],
+      ]);
+    });
+
+    BluedotPointSdk.on('checkedIntoFence', (event) => {
+      // ...
+      console.warn('Checked in');
+      printLogs({heading: 'Checked in', data: event});
+      showAlert('Checked in', event);
+      setData((prevData) => [
+        ...prevData,
+        ...[{heading: 'Checked In', data: JSON.stringify(event)}],
+      ]);
+    });
+
+    BluedotPointSdk.on('checkedOutFromFence', (event) => {
+      // ...
+      showAlert('Checked Out', event);
+      printLogs({heading: 'Checked out', data: event});
+      setData((prevData) => [
+        ...prevData,
+        ...[{heading: 'Checked Out', data: JSON.stringify(event)}],
+      ]);
+    });
   };
 
   useEffect(() => {
     const getPermission = async () => {
-      const granted = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-      ]);
-      if (
-        granted[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] &&
-        granted[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] &&
-        granted[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE]
-      ) {
-        console.warn('You can use the location');
-        startBluedotSDK();
+      if (Platform.OS === 'android') {
+        const status = await requestMultiple([
+          PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
+          PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE,
+        ]);
+
+        if (
+          status[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION] &&
+          status[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE] === 'granted'
+        ) {
+          startBluedotSDK();
+        } else {
+          showAlert('Oops!', 'Permission denied');
+        }
       } else {
-        showAlert('Oops!', 'Permission denied');
+        const status = await requestMultiple([PERMISSIONS.IOS.LOCATION_ALWAYS]);
+
+        if (status[PERMISSIONS.IOS.LOCATION_ALWAYS] === 'granted') {
+          startBluedotSDK();
+        } else {
+          showAlert('Oops!', 'Permission denied');
+        }
       }
     };
 
     getPermission();
   }, []);
-
-  BluedotPointSdk.on('zoneInfoUpdate', (event) => {
-    // ...
-    console.warn('Zone info');
-    printLogs({heading: 'Zone Info', data: event});
-    showAlert('zone', event);
-    setData((prevData) => [
-      ...prevData,
-      ...[{heading: 'Zone Info', data: JSON.stringify(event)}],
-    ]);
-  });
-
-  BluedotPointSdk.on('checkedIntoFence', (event) => {
-    // ...
-    console.warn('Checked in');
-    printLogs({heading: 'Checked in', data: event});
-    showAlert('Checked in', event);
-    setData((prevData) => [
-      ...prevData,
-      ...[{heading: 'Checked In', data: JSON.stringify(event)}],
-    ]);
-  });
-
-  BluedotPointSdk.on('checkedOutFromFence', (event) => {
-    // ...
-    showAlert('Checked Out', event);
-    printLogs({heading: 'Checked out', data: event});
-    setData((prevData) => [
-      ...prevData,
-      ...[{heading: 'Checked Out', data: JSON.stringify(event)}],
-    ]);
-  });
-
-  BluedotPointSdk.on('checkedIntoBeacon', (event) => {
-    // ...
-    showAlert('Beacon in', event);
-    setData((prevData) => [
-      ...prevData,
-      ...[{heading: 'Checked into beacon', data: JSON.stringify(event)}],
-    ]);
-  });
-
-  BluedotPointSdk.on('checkedOutFromBeacon', (event) => {
-    // ...
-    showAlert('Beacon Out', event);
-    setData((prevData) => [
-      ...prevData,
-      ...[{heading: 'Checked out beacon', data: JSON.stringify(event)}],
-    ]);
-  });
-
-  BluedotPointSdk.on('startRequiringUserInterventionForBluetooth', (event) => {
-    // ...
-    showAlert('Bluetooth start', event);
-    setData((prevData) => [
-      ...prevData,
-      ...[{heading: 'Bluetooth Start', data: JSON.stringify(event)}],
-    ]);
-  });
-
-  BluedotPointSdk.on('stopRequiringUserInterventionForBluetooth', (event) => {
-    // ...
-    showAlert('Bluetooth stop', event);
-    setData((prevData) => [
-      ...prevData,
-      ...[{heading: 'Bluetooth Stop', data: JSON.stringify(event)}],
-    ]);
-  });
-
-  BluedotPointSdk.on(
-    'startRequiringUserInterventionForLocationServices',
-    (event) => {
-      // ...
-      showAlert('Location intervention start', event);
-      setData((prevData) => [
-        ...prevData,
-        ...[
-          {heading: 'Location intervention start', data: JSON.stringify(event)},
-        ],
-      ]);
-    },
-  );
-
-  BluedotPointSdk.on(
-    'stopRequiringUserInterventionForLocationServices',
-    (event) => {
-      // ...
-      showAlert('Location intervention stop', event);
-      setData((prevData) => [
-        ...prevData,
-        ...[
-          {heading: 'Location intervention stop', data: JSON.stringify(event)},
-        ],
-      ]);
-    },
-  );
 
   const renderItem = ({item}: any) => {
     return (

@@ -10,6 +10,12 @@
 	<array>
 		<string>location</string>
 	</array>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Need location to track your location around farms</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Need location to track your location around farms</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Need location to track your location around farms</string>
 	<key>LSApplicationCategoryType</key>
 	<string></string>
 	<key>CFBundleGetInfoString</key>
