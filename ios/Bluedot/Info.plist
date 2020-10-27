@@ -16,6 +16,8 @@
 	<string>Need location to track your location around farms</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Need location to track your location around farms</string>
+	<key>BDPointBackgroundLocationEnabledForWhenInUseKey</key>
+ 	<true/>
 	<key>LSApplicationCategoryType</key>
 	<string></string>
 	<key>CFBundleGetInfoString</key>

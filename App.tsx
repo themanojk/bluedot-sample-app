@@ -88,87 +88,90 @@ const App = () => {
     data.timeStamp = new Date().toLocaleString();
     log.info(data);
   };
-  const startBluedotSDK = () => {
-    BluedotPointSdk.setForegroundNotification(
-      channelId,
-      channelName,
-      title,
-      content,
-      true,
-    );
-
-    // Start Bluedot SDK
-    BluedotPointSdk.authenticate(
-      '02073a75-ff23-43e9-b00f-98570a0bd864',
-      '<Always|WhenInUse>',
-      async () => {
-        printLogs({
-          heading: 'Authenticaion Success',
-          data: 'Connection Successful',
-        });
-        showAlert('Authentication Success', 'Connection Successful');
-        setData((prevData) => [
-          ...prevData,
-          ...[
-            {
-              heading: 'Authenticaion Success',
-              data: 'Connection Successful',
-            },
-          ],
-        ]);
-      },
-      () => {
-        printLogs({
-          heading: 'Authenticaion Failed',
-          data: 'Oops! Check location service',
-        });
-        showAlert('Authentication Failed', 'Oops! Check location service');
-        setData((prevData) => [
-          ...prevData,
-          ...[
-            {
-              heading: 'Authenticaion Failed',
-              data: 'Oops! Check location service',
-            },
-          ],
-        ]);
-      },
-    );
-
-    BluedotPointSdk.on('zoneInfoUpdate', (event) => {
-      // ...
-      console.warn('Zone info');
-      printLogs({heading: 'Zone Info', data: event});
-      showAlert('zone', event);
-      setData((prevData) => [
-        ...prevData,
-        ...[{heading: 'Zone Info', data: JSON.stringify(event)}],
-      ]);
-    });
-
-    BluedotPointSdk.on('checkedIntoFence', (event) => {
-      // ...
-      console.warn('Checked in');
-      printLogs({heading: 'Checked in', data: event});
-      showAlert('Checked in', event);
-      setData((prevData) => [
-        ...prevData,
-        ...[{heading: 'Checked In', data: JSON.stringify(event)}],
-      ]);
-    });
-
-    BluedotPointSdk.on('checkedOutFromFence', (event) => {
-      // ...
-      showAlert('Checked Out', event);
-      printLogs({heading: 'Checked out', data: event});
-      setData((prevData) => [
-        ...prevData,
-        ...[{heading: 'Checked Out', data: JSON.stringify(event)}],
-      ]);
-    });
-  };
 
   useEffect(() => {
+    const registerEvent = () => { 
+      BluedotPointSdk.on('zoneInfoUpdate', (event) => {
+        // ...
+        console.warn('Zone info');
+        printLogs({heading: 'Zone Info', data: event});
+        showAlert('zone', event);
+        setData((prevData) => [
+          ...prevData,
+          ...[{heading: 'Zone Info', data: JSON.stringify(event)}],
+        ]);
+      });
+    
+      BluedotPointSdk.on('checkedIntoFence', (event) => {
+        // ...
+        console.warn('Checked in');
+        printLogs({heading: 'Checked in', data: event});
+        showAlert('Checked in', event);
+        setData((prevData) => [
+          ...prevData,
+          ...[{heading: 'Checked In', data: JSON.stringify(event)}],
+        ]);
+      });
+    
+      BluedotPointSdk.on('checkedOutFromFence', (event) => {
+        // ...
+        showAlert('Checked Out', event);
+        printLogs({heading: 'Checked out', data: event});
+        setData((prevData) => [
+          ...prevData,
+          ...[{heading: 'Checked Out', data: JSON.stringify(event)}],
+        ]);
+      });
+    }
+    const startBluedotSDK = () => {
+      BluedotPointSdk.setForegroundNotification(
+        channelId,
+        channelName,
+        title,
+        content,
+        true,
+      );
+  
+      // Start Bluedot SDK
+      BluedotPointSdk.authenticate(
+        'e2c31533-7bbd-4077-b4d1-641f15df0725',
+        '<Always|WhenInUse>',
+        async () => {
+          printLogs({
+            heading: 'Authenticaion Success',
+            data: 'Connection Successful',
+          });
+          showAlert('Authentication Success', 'Connection Successful');
+          setData((prevData) => [
+            ...prevData,
+            ...[
+              {
+                heading: 'Authenticaion Success',
+                data: 'Connection Successful',
+              },
+            ],
+          ]);
+        },
+        () => {
+          printLogs({
+            heading: 'Authenticaion Failed',
+            data: 'Oops! Check location service',
+          });
+          showAlert('Authentication Failed', 'Oops! Check location service');
+          setData((prevData) => [
+            ...prevData,
+            ...[
+              {
+                heading: 'Authenticaion Failed',
+                data: 'Oops! Check location service',
+              },
+            ],
+          ]);
+        },
+      );
+  
+      registerEvent();
+    };
     const getPermission = async () => {
       if (Platform.OS === 'android') {
         const status = await requestMultiple([
